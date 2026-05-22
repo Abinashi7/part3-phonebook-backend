@@ -1,0 +1,17 @@
+GET http://localhost:3001/
+###
+GET http://localhost:3001/api/persons
+###
+GET http://localhost:3001/api/info
+###
+GET http://localhost:3001/api/persons/4
+###
+DELETE http://localhost:3001/api/persons/4
+###
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "John Doe 2",
+    "number": "123-456-7898"
+}
