@@ -4,7 +4,7 @@ const morgan = require('morgan');
 
 const app = express();
 app.use(express.json());
-// app.use(morgan(':method :url :status :res[content-length] - :response-time ms'));
+app.use(express.static('dist'));
 app.use(
     morgan(function (tokens, req, res) {
         return [
@@ -46,7 +46,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/persons', (req, res) => {
-    console.log("req is =============>", req.body);
     res.json(persons);
 });
 
