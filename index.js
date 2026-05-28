@@ -1,23 +1,22 @@
-require('dotenv').config();
-const e = require('express');
-const express = require('express');
-const morgan = require('morgan');
-const PhoneBook = require('./models/phoneBook');
+require('dotenv').config()
+const express = require('express')
+const morgan = require('morgan')
+const PhoneBook = require('./models/phoneBook')
 
-const app = express();
-app.use(express.json());
-app.use(express.static('dist'));
+const app = express()
+app.use(express.json())
+app.use(express.static('dist'))
 app.use(
-    morgan(function (tokens, req, res) {
-        return [
-            tokens.method(req, res),
-            tokens.url(req, res),
-            tokens.status(req, res),
-            tokens.res(req, res, 'content-length'), '-',
-            tokens['response-time'](req, res), 'ms',
-            JSON.stringify(req.body)
-        ].join(' ')
-    })
+  morgan(function (tokens, req, res) {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms',
+      JSON.stringify(req.body)
+    ].join(' ')
+  })
 )
 
 const errorHandler = (error, request, response, next) => {
@@ -25,99 +24,99 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message });
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
-};
+}
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
-});
+  res.send('Hello World')
+})
 
 app.get('/api/persons', (req, res) => {
-    PhoneBook.find({}).then(persons => {
-        res.json(persons);
-    });
-});
+  PhoneBook.find({}).then(persons => {
+    res.json(persons)
+  })
+})
 
 app.get('/api/info', (req, res) => {
-    const date = new Date();
-    PhoneBook.countDocuments({}).then(count => {
-        res.send(`Phonebook has info for ${count} people <br> ${date}`);
-    });
-});
+  const date = new Date()
+  PhoneBook.countDocuments({}).then(count => {
+    res.send(`Phonebook has info for ${count} people <br> ${date}`)
+  })
+})
 
 app.get('/api/persons/:id', (req, res, next) => {
-    const id = req.params.id;
-    PhoneBook.findById(id).then(person => {
-        if (person) {
-            res.json(person);
-        } else {
-            res.status(404).end();
-        }
-    }).catch(error => {
-        next(error);
-    });
-});
+  const id = req.params.id
+  PhoneBook.findById(id).then(person => {
+    if (person) {
+      res.json(person)
+    } else {
+      res.status(404).end()
+    }
+  }).catch(error => {
+    next(error)
+  })
+})
 
 app.delete('/api/persons/:id', (req, res, next) => {
-    const id = req.params.id;
-    PhoneBook.findByIdAndDelete(id).then(result => {
-        res.status(204).end();
-    }).catch(error => {
-        console.log(error);
-        next(error);
-    });
-});
+  const id = req.params.id
+  PhoneBook.findByIdAndDelete(id).then(() => {
+    res.status(204).end()
+  }).catch(error => {
+    console.log(error)
+    next(error)
+  })
+})
 
 app.put('/api/persons/:id', (req, res, next) => {
-    const body = req.body;
+  const body = req.body
 
-    const person = {
-        name: body.name,
-        number: body.number,
-    };
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
 
-    PhoneBook.findByIdAndUpdate(req.params.id, person, { new: true, runValidators: true, context: 'query' })
-        .then(updatedPerson => {
-            if (updatedPerson) {
-                res.json(updatedPerson);
-            } else {
-                res.status(404).end();
-            }
-        })
-        .catch(error => next(error));
-});
+  PhoneBook.findByIdAndUpdate(req.params.id, person, { new: true, runValidators: true, context: 'query' })
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        res.json(updatedPerson)
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => next(error))
+})
 
 app.post('/api/persons', (req, res, next) => {
-    const body = req.body;
+  const body = req.body
 
-    if (!body.name || !body.number) {
-        return res.status(400).json({
-            error: "name or number is missing"
-        });
-    }
+  if (!body.name || !body.number) {
+    return res.status(400).json({
+      error: 'name or number is missing'
+    })
+  }
 
-    const phoneBookEntry = new PhoneBook({
-        name: body.name,
-        number: body.number
-    });
+  const phoneBookEntry = new PhoneBook({
+    name: body.name,
+    number: body.number
+  })
 
-    phoneBookEntry.save()
-        .then(savedPerson => {
-            res.json(savedPerson);
-        })
-        .catch(error => next(error));
-});
+  phoneBookEntry.save()
+    .then(savedPerson => {
+      res.json(savedPerson)
+    })
+    .catch(error => next(error))
+})
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
-app.use(errorHandler);
-const PORT = process.env.PORT || 3001;
+app.use(errorHandler)
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
+  console.log(`server running on port ${PORT}`)
 })
